@@ -39,7 +39,35 @@ public static class BarcodeHelpers
 
         using Bitmap bitmap = barcodeWriter.Write(text);
         using MemoryStream ms = new();
-        bitmap.Save(ms, ImageFormat.Png);
+        
+        // If background is transparent, we need to modify the bitmap
+        if (background.A == 0)
+        {
+            // Create a new bitmap with transparent background
+            using Bitmap transparentBitmap = new(bitmap.Width, bitmap.Height, PixelFormat.Format32bppArgb);
+            using Graphics g = Graphics.FromImage(transparentBitmap);
+            g.Clear(System.Drawing.Color.Transparent);
+            
+            // Draw only the QR code pattern (black parts) onto the transparent background
+            for (int x = 0; x < bitmap.Width; x++)
+            {
+                for (int y = 0; y < bitmap.Height; y++)
+                {
+                    System.Drawing.Color pixel = bitmap.GetPixel(x, y);
+                    if (pixel.R == 0 && pixel.G == 0 && pixel.B == 0) // If pixel is black (QR code pattern)
+                    {
+                        transparentBitmap.SetPixel(x, y, foreground);
+                    }
+                }
+            }
+            
+            transparentBitmap.Save(ms, ImageFormat.Png);
+        }
+        else
+        {
+            bitmap.Save(ms, ImageFormat.Png);
+        }
+
         WriteableBitmap bitmapImage = new(encodingOptions.Width, encodingOptions.Height);
         ms.Position = 0;
         bitmapImage.SetSource(ms.AsRandomAccessStream());

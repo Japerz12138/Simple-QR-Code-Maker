@@ -55,6 +55,9 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     private bool isFaqPaneOpen = false;
 
     [ObservableProperty]
+    private bool isTransparentBackground = false;
+
+    [ObservableProperty]
     private bool isHistoryPaneOpen = false;
 
     [ObservableProperty]
@@ -126,6 +129,20 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     {
         debounceTimer.Stop();
         debounceTimer.Start();
+    }
+
+    partial void OnIsTransparentBackgroundChanged(bool value)
+    {
+        if (value)
+        {
+            // Set background to transparent
+            BackgroundColor = Windows.UI.Color.FromArgb(0, 255, 255, 255);
+        }
+        else
+        {
+            // Set background to white
+            BackgroundColor = Windows.UI.Color.FromArgb(255, 255, 255, 255);
+        }
     }
 
     public bool CanSaveImage { get => !string.IsNullOrWhiteSpace(UrlText); }
